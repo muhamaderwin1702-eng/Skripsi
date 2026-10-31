@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SKRIPSIHUB - Platform AI Akademik Profesional</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50: '#f0f4ff',
+            100: '#e0e9ff',
+            200: '#c7d7fe',
+            500: '#6366f1', // Soft Lilac Blue
+            600: '#4f46e5',
+            700: '#4338ca',
+          },
+          pastel: {
+            lilac: '#c8b6ff',
+            blue: '#b8c0ff',
+            mint: '#b7e4c7',
+            sage: '#d8f3dc',
+            cardLight: '#ffffff',
+            cardDark: '#1e1e2d',
+            bgLight: '#f8fafc',
+            bgDark: '#12121e'
+          }
+        }
+      }
+    }
+  }
+</script>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Docx JS & JSZip -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  body { font-family: 'Inter', sans-serif; }
+  .paper-preview {
+    font-family: "Times New Roman", Times, serif;
+    line-height: 1.8;
+    text-align: justify;
+  }
+  .paper-preview p { text-indent: 1.25cm; margin-bottom: 0.5rem; }
+  .paper-preview h1, .paper-preview h2, .paper-preview h3 { text-indent: 0; font-weight: bold; }
+  .paper-preview h1 { text-align: center; font-size: 1.1em; text-transform: uppercase; }
+  .paper-preview h2 { text-align: left; font-size: 1em; }
+</style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Mobile Overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden md:hidden"></div>
+
+  <!-- App Wrapper -->
+  <div class="flex flex-1 min-h-screen relative overflow-x-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed top-0 bottom-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 flex flex-col transition-transform duration-300 -translate-x-full md:translate-x-0">
+      <!-- Logo Header -->
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-pastel-lilac flex items-center justify-center text-white font-bold text-xl shadow-md shadow-brand-500/20">
+            S
+          </div>
+          <div>
+            <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-brand-600 to-indigo-400 bg-clip-text text-transparent">SKRIPSIHUB</h1>
+            <p class="text-[10px] text-slate-400 font-medium">AI Academic Copilot</p>
+          </div>
+        </div>
+        <button id="close-sidebar-btn" class="md:hidden text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Menu -->
+      <div class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        <div>
+          <p class="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Utama</p>
+          <nav class="space-y-1">
+            <button data-view="dash" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-brand-600 bg-brand-50 dark:bg-brand-950/50 dark:text-brand-400">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Beranda
+            </button>
+            <button data-view="proyek" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="folder-kanban" class="w-4 h-4"></i> Studio Skripsi
+            </button>
+          </nav>
+        </div>
+
+        <div>
+          <p class="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Riset & Judul</p>
+          <nav class="space-y-1">
+            <button data-view="judul" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="lightbulb" class="w-4 h-4"></i> Brainstorming Judul
+            </button>
+            <button data-view="layak" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="shield-check" class="w-4 h-4"></i> Kelayakan Judul
+            </button>
+            <button data-view="novelty" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="sparkles" class="w-4 h-4"></i> Temukan Novelty
+            </button>
+          </nav>
+        </div>
+
+        <div>
+          <p class="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Literatur & Data</p>
+          <nav class="space-y-1">
+            <button data-view="artikel" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="file-search" class="w-4 h-4"></i> Cari Artikel Jurnal
+            </button>
+            <button data-view="ebook" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="book-open" class="w-4 h-4"></i> Cari Ebook
+            </button>
+            <button data-view="data" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Olah Data Statistik
+            </button>
+          </nav>
+        </div>
+
+        <div>
+          <p class="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Pengujian & Finis</p>
+          <nav class="space-y-1">
+            <button data-view="sidang" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="graduation-cap" class="w-4 h-4"></i> Simulasi Sidang
+            </button>
+            <button data-view="plag" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="copy-check" class="w-4 h-4"></i> Cek Kemiripan
+            </button>
+            <button data-view="ref" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="link" class="w-4 h-4"></i> Verifikasi Referensi
+            </button>
+            <button data-view="para" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+              <i data-lucide="pen-tool" class="w-4 h-4"></i> Parafrase Akademik
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Footer Theme Toggle -->
+      <div class="p-3 border-t border-slate-100 dark:border-slate-800">
+        <button id="theme-toggle" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-300">
+          <span class="flex items-center gap-2"><i data-lucide="moon" class="w-4 h-4"></i> Mode Gelap</span>
+          <div class="w-8 h-4 bg-slate-300 dark:bg-brand-600 rounded-full p-0.5 transition-colors">
+            <div class="w-3 h-3 bg-white rounded-full transition-transform dark:translate-x-4"></div>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+      <!-- Top Navbar Header -->
+      <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button id="open-sidebar-btn" class="md:hidden text-slate-600 dark:text-slate-300 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <h2 id="top-title" class="font-bold text-slate-800 dark:text-slate-100 text-base md:text-lg">Beranda Dashboard</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Gemini 2.5 Active
+          </span>
+        </div>
+      </header>
+
+      <!-- Main Container Views -->
+      <main class="flex-1 p-4 md:p-6 max-w-6xl w-full mx-auto">
+
+        <!-- VIEW: BERANDA -->
+        <section id="v-dash" class="view space-y-6">
+          <div class="bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 text-white rounded-2xl p-6 shadow-lg shadow-brand-500/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <span class="bg-white/20 text-white text-xs px-2.5 py-1 rounded-md font-semibold tracking-wide backdrop-blur-md">SaaS Akademik Pro</span>
+              <h1 class="text-2xl md:text-3xl font-extrabold mt-2">Selamat Datang di SKRIPSIHUB</h1>
+              <p class="text-indigo-100 text-sm mt-1 max-w-xl">Platform pendamping riset akademik berbasis AI. Susun Bab I–V secara ilmiah, terstruktur, valid, dan dapat dipertanggungjawabkan.</p>
+            </div>
+            <button data-v="proyek" class="bg-white text-brand-700 hover:bg-slate-100 font-semibold px-5 py-2.5 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 whitespace-nowrap">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Mulai Proyek Skripsi
+            </button>
+          </div>
+
+          <!-- SaaS Cards Layout Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-slate-400 uppercase">Status Proyek</span>
+                <i data-lucide="book-open" class="w-5 h-5 text-brand-500"></i>
+              </div>
+              <h3 id="dash-title" class="text-lg font-bold truncate">Belum Ada Proyek Aktif</h3>
+              <p id="dash-prodi" class="text-xs text-slate-500 mt-1">Isi formulir proyek di Studio Skripsi untuk memulai</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-slate-400 uppercase">Referensi Tersimpan</span>
+                <i data-lucide="bookmark" class="w-5 h-5 text-emerald-500"></i>
+              </div>
+              <h3 id="dash-ref-count" class="text-2xl font-black text-slate-800 dark:text-slate-100">0</h3>
+              <p class="text-xs text-slate-500 mt-1">Artikel jurnal OpenAlex tersimpan</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-slate-400 uppercase">Kemajuan Bab</span>
+                <i data-lucide="check-circle2" class="w-5 h-5 text-indigo-500"></i>
+              </div>
+              <h3 id="dash-progress" class="text-2xl font-black text-slate-800 dark:text-slate-100">0 / 5</h3>
+              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-2 overflow-hidden">
+                <div id="dash-bar" class="bg-brand-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Tools Grid -->
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-200 pt-2">Alat Riset Cepat</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button data-v="judul" class="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-brand-500/50 hover:shadow-md transition-all text-left group">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <i data-lucide="lightbulb" class="w-5 h-5"></i>
+              </div>
+              <h4 class="font-bold text-sm">Brainstorming</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Cari ide judul otomatis</p>
+            </button>
+
+            <button data-v="artikel" class="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-brand-500/50 hover:shadow-md transition-all text-left group">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <i data-lucide="file-search" class="w-5 h-5"></i>
+              </div>
+              <h4 class="font-bold text-sm">Cari Jurnal</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Integrasi OpenAlex API</p>
+            </button>
+
+            <button data-v="data" class="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-brand-500/50 hover:shadow-md transition-all text-left group">
+              <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/50 text-sky-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+              </div>
+              <h4 class="font-bold text-sm">Olah Data</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Validitas & Regresi CSV</p>
+            </button>
+
+            <button data-v="sidang" class="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-brand-500/50 hover:shadow-md transition-all text-left group">
+              <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+              </div>
+              <h4 class="font-bold text-sm">Simulasi Sidang</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Uji dosen penguji AI</p>
+            </button>
+          </div>
+        </section>
+
+        <!-- VIEW: STUDIO SKRIPSI -->
+        <section id="v-proyek" class="view hidden space-y-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold mb-1">Pengaturan Proyek Skripsi</h2>
+            <p class="text-xs text-slate-500 mb-6">Lengkapi parameter penelitian. Data ini digunakan AI untuk menghasilkan Bab I hingga Bab V secara konsisten.</p>
+
+            <form id="project-form" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Judul Penelitian Skripsi</label>
+                <textarea id="inp-judul" rows="2" class="w-full text-sm p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Masukkan judul skripsi lengkap..."></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Jenis Karya</label>
+                  <select id="inp-jenis" class="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 outline-none">
+                    <option value="Skripsi (S1)">Skripsi (S1)</option>
+                    <option value="Tesis (S2)">Tesis (S2)</option>
+                    <option value="Disertasi (S3)">Disertasi (S3)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Metode Penelitian</label>
+                  <select id="inp-metode" class="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 outline-none">
+                    <option value="Kuantitatif">Kuantitatif (Survei/Kuesioner)</option>
+                    <option value="Kualitatif">Kualitatif (Wawancara/Studi Kasus)</option>
+                    <option value="Eksperimen">Eksperimen / Rekayasa</option>
+                    <option value="Studi Pustaka">Studi Pustaka (Literature Review)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Mahasiswa</label>
+                  <input type="text" id="inp-nama" class="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 outline-none" placeholder="Nama lengkap">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">NIM</label>
+                  <input type="text" id="inp-nim" class="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 outline-none" placeholder="Nomor Induk Mahasiswa">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Program Studi / Kampus</label>
+                  <input type="text" id="inp-prodi" class="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 outline-none" placeholder="Informatika - Universitas X">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Data Real Penelitian / Catatan Observasi (Khusus Bab IV & V)</label>
+                <textarea id="inp-data-real" rows="3" class="w-full text-sm p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Masukkan ringkasan data statistik nyata, hasil uji kuesioner, atau temuan wawancara untuk dasar Bab IV..."></textarea>
+              </div>
+
+              <button type="button" id="save-project-btn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2">
+                <i data-lucide="save" class="w-4 h-4"></i> Simpan Parameter & Buka Studio Bab
+              </button>
+            </form>
+          </div>
+
+          <!-- Studio Bab Tabs & Generator -->
+          <div id="studio-workspace" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 overflow-x-auto">
+              <div class="flex gap-2">
+                <button data-bab="1" class="bab-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-brand-600 text-white shadow-md">BAB I</button>
+                <button data-bab="2" class="bab-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">BAB II</button>
+                <button data-bab="3" class="bab-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">BAB III</button>
+                <button data-bab="4" class="bab-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">BAB IV</button>
+                <button data-bab="5" class="bab-tab px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">BAB V</button>
+              </div>
+
+              <button id="download-docx-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm whitespace-nowrap">
+                <i data-lucide="file-down" class="w-4 h-4"></i> Unduh Word (.docx)
+              </button>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+              <span id="bab-status-label" class="text-xs font-semibold text-slate-600 dark:text-slate-400">Status: Belum di-generate</span>
+              <button id="generate-bab-btn" class="bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-semibold px-5 py-2 rounded-xl text-xs flex items-center gap-2 shadow-md transition-all">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> Generate Naskah Bab Ini
+              </button>
+            </div>
+
+            <!-- Editor Preview Toggle -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500 uppercase">Pratinjau Naskah Akademik</span>
+                <span class="text-[11px] text-slate-400">Format Standard Times New Roman 12pt</span>
+              </div>
+              <div id="paper-view" class="paper-preview bg-white text-slate-900 border border-slate-200 rounded-xl p-8 min-h-[400px] max-h-[600px] overflow-y-auto shadow-inner text-sm space-y-3">
+                <p class="text-slate-400 text-center italic my-12">Naskah hasil AI akan ditampilkan di sini dalam format standar karya ilmiah.</p>
+              </div>
+              <textarea id="raw-editor" class="hidden w-full h-[400px] text-xs font-mono p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-900 text-slate-100 focus:outline-none"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: CARI ARTIKEL OPENALEX -->
+        <section id="v-artikel" class="view hidden space-y-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold mb-1">Pencarian Artikel Jurnal OpenAlex</h2>
+            <p class="text-xs text-slate-500 mb-4">Cari referensi jurnal terindeks ber-DOI resmi secara real-time langsung dari basis data OpenAlex.</p>
+
+            <div class="flex gap-2">
+              <input type="text" id="openalex-query" class="flex-1 text-sm p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Ketik kata kunci topik atau judul artikel...">
+              <button id="openalex-search-btn" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 rounded-xl text-sm flex items-center gap-2">
+                <i data-lucide="search" class="w-4 h-4"></i> Cari
+              </button>
+            </div>
+          </div>
+
+          <!-- Results Container -->
+          <div id="openalex-results" class="space-y-3">
+            <p class="text-center text-xs text-slate-400 py-8">Masukkan kata kunci untuk memulai pencarian literatur terverifikasi.</p>
+          </div>
+        </section>
+
+        <!-- VIEW: BRAINstorming JUDUL -->
+        <section id="v-judul" class="view hidden space-y-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold mb-1">Brainstorming Judul Penelitian</h2>
+            <p class="text-xs text-slate-500 mb-4">Dapatkan rekomendasi 10 opsi judul skripsi yang relevan dengan variabel spesifik.</p>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold mb-1">Topik Bidang Studi</label>
+                <input type="text" id="bs-topik" class="w-full text-sm p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 outline-none" placeholder="Misal: Penerapan Machine Learning dalam Manajemen Keuangan UMKM">
+              </div>
+              <button id="bs-gen-btn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> Buat 10 Rekomendasi Judul
+              </button>
+            </div>
+          </div>
+          <div id="bs-results" class="space-y-3"></div>
+        </section>
+
+        <!-- VIEW: OLAH DATA STATISTIK -->
+        <section id="v-data" class="view hidden space-y-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold mb-1">Olah Data Statistik Deterministik</h2>
+            <p class="text-xs text-slate-500 mb-4">Uji deskriptif, validitas, reliabilitas Cronbach's Alpha, dan regresi linear secara langsung di browser tanpa AI.</p>
+
+            <div class="space-y-4">
+              <textarea id="csv-input" rows="6" class="w-full text-xs font-mono p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 outline-none" placeholder="Format CSV (Baris pertama header):&#10;X1.1,X1.2,X2.1,Y.1&#10;4,5,3,5&#10;3,4,2,4&#10;5,5,4,5"></textarea>
+              <button id="process-stats-btn" class="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm flex items-center gap-2">
+                <i data-lucide="calculator" class="w-4 h-4"></i> Jalankan Analisis Statistik
+              </button>
+            </div>
+          </div>
+          <div id="stats-results" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
+            <p class="text-xs text-slate-400 text-center">Hasil analisis akan muncul di sini.</p>
+          </div>
+        </section>
+
+        <!-- VIEW PLACEHOLDERS DUMMY SECARA MANDIRI UNTUK FITUR LAIN (Kelayakan, Novelty, Ebook, Sidang, dll) -->
+        <section id="v-layak" class="view hidden space-y-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold">Uji Kelayakan Judul</h2>
+            <p class="text-xs text-slate-500 mt-1">Evaluasi parameter metodologis dan kesiapan riset judul Anda.</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // State Management
+    const state = {
+      theme: 'light',
+      currentView: 'dash',
+      currentBab: 1,
+      project: {
+        judul: '',
+        jenis: 'Skripsi (S1)',
+        metode: 'Kuantitatif',
+        nama: '',
+        nim: '',
+        prodi: '',
+        dataReal: '',
+        babs: { 1: '', 2: '', 3: '', 4: '', 5: '' }
+      },
+      savedReferences: []
+    };
+
+    // DOM Elements & Event Listeners Init
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initNavigation();
+      initThemeToggle();
+      initStudio();
+      initOpenAlex();
+      initStats();
+      initBrainstorming();
+    });
+
+    // Navigation Handler
+    function initNavigation() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      
+      document.getElementById('open-sidebar-btn')?.addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+      });
+
+      const closeSidebar = () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+      };
+
+      document.getElementById('close-sidebar-btn')?.addEventListener('click', closeSidebar);
+      overlay?.addEventListener('click', closeSidebar);
+
+      document.querySelectorAll('[data-view], [data-v]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const viewTarget = btn.getAttribute('data-view') || btn.getAttribute('data-v');
+          if (!viewTarget) return;
+
+          document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+          const targetEl = document.getElementById(`v-${viewTarget}`);
+          if (targetEl) targetEl.classList.remove('hidden');
+
+          state.currentView = viewTarget;
+          closeSidebar();
+          
+          // Update top title
+          const titleMap = {
+            dash: 'Beranda Dashboard',
+            proyek: 'Studio Skripsi',
+            judul: 'Brainstorming Judul',
+            layak: 'Kelayakan Judul',
+            novelty: 'Temukan Novelty',
+            artikel: 'Cari Artikel Jurnal',
+            ebook: 'Cari Ebook',
+            data: 'Olah Data Statistik',
+            sidang: 'Simulasi Sidang',
+            plag: 'Cek Kemiripan',
+            ref: 'Verifikasi Referensi',
+            para: 'Parafrase Akademik'
+          };
+          document.getElementById('top-title').textContent = titleMap[viewTarget] || 'SKRIPSIHUB';
+        });
+      });
+    }
+
+    // Theme Toggle Handler
+    function initThemeToggle() {
+      const toggleBtn = document.getElementById('theme-toggle');
+      toggleBtn?.addEventListener('click', () => {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+          html.classList.remove('dark');
+          state.theme = 'light';
+        } else {
+          html.classList.add('dark');
+          state.theme = 'dark';
+        }
+      });
+    }
+
+    // Studio & AI Generation Integration
+    function initStudio() {
+      const saveBtn = document.getElementById('save-project-btn');
+      saveBtn?.addEventListener('click', () => {
+        state.project.judul = document.getElementById('inp-judul').value;
+        state.project.jenis = document.getElementById('inp-jenis').value;
+        state.project.metode = document.getElementById('inp-metode').value;
+        state.project.nama = document.getElementById('inp-nama').value;
+        state.project.nim = document.getElementById('inp-nim').value;
+        state.project.prodi = document.getElementById('inp-prodi').value;
+        state.project.dataReal = document.getElementById('inp-data-real').value;
+
+        document.getElementById('dash-title').textContent = state.project.judul || 'Skripsi Tanpa Judul';
+        document.getElementById('dash-prodi').textContent = state.project.prodi || 'Program Studi';
+        alert('Parameter proyek berhasil disimpan!');
+      });
+
+      // Bab Tabs Switch
+      document.querySelectorAll('.bab-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.bab-tab').forEach(t => {
+            t.classList.remove('bg-brand-600', 'text-white', 'shadow-md');
+            t.classList.add('bg-slate-100', 'text-slate-600', 'dark:bg-slate-800', 'dark:text-slate-400');
+          });
+          tab.classList.remove('bg-slate-100', 'text-slate-600', 'dark:bg-slate-800', 'dark:text-slate-400');
+          tab.classList.add('bg-brand-600', 'text-white', 'shadow-md');
+
+          const babNum = parseInt(tab.getAttribute('data-bab'));
+          state.currentBab = babNum;
+          
+          const content = state.project.babs[babNum] || '<p class="text-slate-400 text-center italic my-12">Belum ada naskah untuk Bab ini.</p>';
+          document.getElementById('paper-view').innerHTML = content;
+        });
+      });
+
+      // AI Generation via Backend API Call
+      document.getElementById('generate-bab-btn')?.addEventListener('click', async () => {
+        if (!state.project.judul) {
+          alert('Mohon isi dan simpan Judul Skripsi terlebih dahulu!');
+          return;
+        }
+
+        const btn = document.getElementById('generate-bab-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menghasilkan Naskah Backend...';
+        lucide.createIcons();
+
+        try {
+          const res = await fetch('/api/generate-bab', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bab: state.currentBab,
+              project: state.project
+            })
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            state.project.babs[state.currentBab] = data.content;
+            document.getElementById('paper-view').innerHTML = data.content;
+            document.getElementById('bab-status-label').textContent = `Status: Bab ${state.currentBab} Selesai`;
+            
+            // Update Dashboard Progress
+            const completedCount = Object.values(state.project.babs).filter(b => b.length > 0).length;
+            document.getElementById('dash-progress').textContent = `${completedCount} / 5`;
+            document.getElementById('dash-bar').style.width = `${(completedCount / 5) * 100}%`;
+          } else {
+            alert('Gagal menghasilkan naskah: ' + data.error);
+          }
+        } catch (err) {
+          alert('Terjadi kesalahan koneksi backend server: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4"></i> Generate Naskah Bab Ini';
+          lucide.createIcons();
+        }
+      });
+    }
+
+    // OpenAlex Real API Integration
+    function initOpenAlex() {
+      document.getElementById('openalex-search-btn')?.addEventListener('click', async () => {
+        const query = document.getElementById('openalex-query').value.trim();
+        if (!query) return;
+
+        const container = document.getElementById('openalex-results');
+        container.innerHTML = '<p class="text-center text-xs text-slate-400 py-8">Mencari jurnal dari OpenAlex API...</p>';
+
+        try {
+          const res = await fetch(`https://api.openalex.org/works?search=${encodeURIComponent(query)}&per-page=5`);
+          const data = await res.json();
+
+          if (data.results && data.results.length > 0) {
+            container.innerHTML = data.results.map(item => `
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm space-y-2">
+                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">${item.title}</h4>
+                <p class="text-xs text-slate-500">${item.authorships?.map(a => a.author.display_name).slice(0, 3).join(', ')} (${item.publication_year})</p>
+                <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <span class="text-slate-400">${item.primary_location?.source?.display_name || 'Jurnal Terindex'}</span>
+                  ${item.doi ? `<a href="${item.doi}" target="_blank" class="text-brand-600 font-medium hover:underline">Link DOI</a>` : ''}
+                </div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p class="text-center text-xs text-slate-400 py-8">Tidak ditemukan artikel jurnal yang sesuai.</p>';
+          }
+        } catch (err) {
+          container.innerHTML = '<p class="text-center text-xs text-rose-500 py-8">Gagal mengambil data dari OpenAlex.</p>';
+        }
+      });
+    }
+
+    // Brainstorming API Integration
+    function initBrainstorming() {
+      document.getElementById('bs-gen-btn')?.addEventListener('click', async () => {
+        const topik = document.getElementById('bs-topik').value.trim();
+        if (!topik) return;
+
+        const results = document.getElementById('bs-results');
+        results.innerHTML = '<p class="text-center text-xs text-slate-400 py-6">Menghasilkan rekomendasi judul...</p>';
+
+        try {
+          const res = await fetch('/api/brainstorm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topik })
+          });
+          const data = await res.json();
+          if (data.titles) {
+            results.innerHTML = data.titles.map((t, idx) => `
+              <div class="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium flex items-center justify-between">
+                <span>${idx + 1}. ${t}</span>
+                <button onclick="document.getElementById('inp-judul').value = '${t.replace(/'/g, "\\'")}'; alert('Judul disalin ke Studio!');" class="text-xs text-brand-600 font-semibold hover:underline">Pakai</button>
+              </div>
+            `).join('');
+          }
+        } catch (err) {
+          results.innerHTML = '<p class="text-center text-xs text-rose-500 py-6">Terjadi kesalahan AI.</p>';
+        }
+      });
+    }
+
+    // Deterministic Stats Calculation (Browser side JS)
+    function initStats() {
+      document.getElementById('process-stats-btn')?.addEventListener('click', () => {
+        const raw = document.getElementById('csv-input').value.trim();
+        if (!raw) return;
+
+        const lines = raw.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        const dataRows = lines.slice(1).map(l => l.split(',').map(v => parseFloat(v.trim())));
+
+        let html = '<table class="w-full text-xs text-left border-collapse"><thead class="bg-slate-100 dark:bg-slate-800"><tr>';
+        headers.forEach(h => html += `<th class="p-2 border border-slate-200 dark:border-slate-700">${h}</th>`);
+        html += '<th class="p-2 border border-slate-200 dark:border-slate-700">Rata-Rata</th></tr></thead><tbody>';
+
+        dataRows.forEach(row => {
+          const sum = row.reduce((a, b) => a + (isNaN(b) ? 0 : b), 0);
+          const avg = (sum / row.length).toFixed(2);
+          html += '<tr>';
+          row.forEach(v => html += `<td class="p-2 border border-slate-200 dark:border-slate-700">${v}</td>`);
+          html += `<td class="p-2 border border-slate-200 dark:border-slate-700 font-bold bg-slate-50 dark:bg-slate-800/50">${avg}</td></tr>`;
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('stats-results').innerHTML = html;
+      });
+    }
+  </script>
+</body>
+</html>
